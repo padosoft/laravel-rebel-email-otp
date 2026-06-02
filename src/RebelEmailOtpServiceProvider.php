@@ -19,6 +19,7 @@ final class RebelEmailOtpServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-rebel-email-otp')
-            ->hasConfigFile('rebel-email-otp');
+            ->hasConfigFile('rebel-email-otp')
+            ->hasMigration('create_rebel_email_otp_challenges_table');
     }
 }
