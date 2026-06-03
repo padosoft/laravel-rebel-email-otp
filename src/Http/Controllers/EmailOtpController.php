@@ -77,10 +77,19 @@ final class EmailOtpController extends Controller
             'code' => ['required', 'string'],
         ]);
 
+        $session = $request->session()->get(self::SESSION_KEY);
+        $challengeId = $request->string('challenge_id')->toString();
+
+        // Il challenge_id deve corrispondere a quello aperto in questa sessione: impedisce
+        // di attaccare direttamente una challenge altrui di cui si conosca l'id.
+        if (! is_array($session) || ($session['challenge_id'] ?? null) !== $challengeId) {
+            return redirect()->route('rebel-email-otp.login');
+        }
+
         $context = SecurityContext::fromRequest($request, $this->hasher)->withPurpose(self::PURPOSE);
 
         $result = $this->otp->verify(
-            $request->string('challenge_id')->toString(),
+            $challengeId,
             $request->string('code')->toString(),
             $context,
         );

@@ -20,8 +20,8 @@ it('enforces the resend cooldown then allows a new code', function (): void {
     // Subito dopo lo start: troppo presto → cooldown.
     expect($otp->resend($identifier, 'customer-login', $ctx)->status)->toBe('cooldown');
 
-    // Spostiamo updated_at nel passato per superare il cooldown (default 30s).
-    EmailOtpChallenge::query()->whereKey($first->challengeId)->update(['updated_at' => now()->subSeconds(120)]);
+    // Spostiamo created_at nel passato per superare il cooldown (default 30s).
+    EmailOtpChallenge::query()->whereKey($first->challengeId)->update(['created_at' => now()->subSeconds(120)]);
 
     $resent = $otp->resend($identifier, 'customer-login', $ctx);
 
@@ -42,7 +42,7 @@ it('stops resending after the max number of resends', function (): void {
     // Portiamo la challenge attiva al limite di resend (default 3) e fuori cooldown.
     EmailOtpChallenge::query()->whereKey($first->challengeId)->update([
         'resends' => 3,
-        'updated_at' => now()->subSeconds(120),
+        'created_at' => now()->subSeconds(120),
     ]);
 
     expect($otp->resend($identifier, 'customer-login', $ctx)->status)->toBe('max_resends');

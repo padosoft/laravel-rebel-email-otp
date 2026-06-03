@@ -69,3 +69,12 @@ it('redirects to login when opening verify without an active session', function 
     $this->get(route('rebel-email-otp.verify-form'))
         ->assertRedirect(route('rebel-email-otp.login'));
 });
+
+it('rejects a verify whose challenge_id does not match the session', function (): void {
+    Notification::fake();
+    $this->post(route('rebel-email-otp.start'), ['email' => 'mario@example.it'])->assertRedirect();
+
+    // challenge_id arbitrario diverso da quello in sessione → torna al login (no brute force diretto).
+    $this->post(route('rebel-email-otp.verify'), ['challenge_id' => 'someone-else-id', 'code' => '123456'])
+        ->assertRedirect(route('rebel-email-otp.login'));
+});

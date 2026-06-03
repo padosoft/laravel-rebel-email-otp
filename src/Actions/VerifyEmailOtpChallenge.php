@@ -60,6 +60,8 @@ final class VerifyEmailOtpChallenge
             }
 
             if ($challenge->status === ChallengeStatus::Blocked) {
+                $this->auditFailure($challenge, 'blocked');
+
                 return VerifyEmailOtpResult::failure('blocked');
             }
 

@@ -64,6 +64,11 @@ final class StartEmailOtpChallenge
                 ->where('idempotency_key', $idempotencyKey)
                 ->where('identifier_hmac', $identifierHashed->hash)
                 ->where('purpose', $purpose)
+                ->when(
+                    $tenantId === null,
+                    fn ($query) => $query->whereNull('tenant_id'),
+                    fn ($query) => $query->where('tenant_id', $tenantId),
+                )
                 ->whereIn('status', [ChallengeStatus::Pending->value, ChallengeStatus::Sent->value])
                 ->first();
 
@@ -74,11 +79,16 @@ final class StartEmailOtpChallenge
             }
         }
 
-        // Una sola challenge attiva: invalida le precedenti pendenti.
+        // Una sola challenge attiva: invalida le precedenti pendenti (scoping tenant-safe:
+        // con tenant null NON tocchiamo le challenge di altri tenant).
         EmailOtpChallenge::query()
             ->where('identifier_hmac', $identifierHashed->hash)
             ->where('purpose', $purpose)
-            ->when($tenantId !== null, fn ($query) => $query->where('tenant_id', $tenantId))
+            ->when(
+                $tenantId === null,
+                fn ($query) => $query->whereNull('tenant_id'),
+                fn ($query) => $query->where('tenant_id', $tenantId),
+            )
             ->whereIn('status', [ChallengeStatus::Pending->value, ChallengeStatus::Sent->value])
             ->update(['status' => ChallengeStatus::Expired->value]);
 
@@ -158,6 +168,10 @@ final class StartEmailOtpChallenge
     /**
      * Normalizza il tempo di risposta a un target (+ jitter) per non rivelare, via
      * timing, se l'account esiste. Disattivabile con timing_target_ms <= 0 (utile nei test).
+     *
+     * Nota carico: usa usleep() nel worker → sotto alta concorrenza occupa il pool FPM.
+     * Tieni il target basso (default 250ms) e proteggi `start` con bot-gate/rate-limit a
+     * monte; in scenari estremi valuta di disabilitarlo e normalizzare a livello di edge/proxy.
      */
     private function padTiming(float $startedAt): void
     {

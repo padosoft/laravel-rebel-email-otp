@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace Padosoft\Rebel\EmailOtp\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Email con il codice OTP. È queued (non blocca il flusso) e va sulla connessione/coda
- * dedicata "rebel". Il codice viaggia solo nel payload della coda (necessario per l'invio):
- * NON va mai loggato.
+ * Email con il codice OTP. È queued (non blocca il flusso) e va sulla coda dedicata "rebel".
+ *
+ * Implementa ShouldBeEncrypted: il payload del job (che contiene il codice in chiaro,
+ * necessario per l'invio) viene CIFRATO nella coda, così un dump di Redis/`failed_jobs`
+ * non espone l'OTP attivo. Il codice non va comunque mai loggato.
  *
  * @property string $code
  */
-final class EmailOtpNotification extends Notification implements ShouldQueue
+final class EmailOtpNotification extends Notification implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
