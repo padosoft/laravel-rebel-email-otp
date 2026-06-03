@@ -25,4 +25,17 @@ return [
     // Target di tempo (ms) per normalizzare la risposta di "start" ed evitare timing-enumeration.
     'timing_target_ms' => (int) env('REBEL_OTP_TIMING_TARGET_MS', 250),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Route web di riferimento (login/verify/resend)
+    |--------------------------------------------------------------------------
+    | Abilitate di default per un'esperienza "out-of-box". Disattivale se usi i
+    | tuoi controller. Le viste sono pubblicabili (tag rebel-email-otp-views).
+    */
+    'routes' => [
+        'enabled' => (bool) env('REBEL_OTP_ROUTES', true),
+        'prefix' => env('REBEL_OTP_ROUTES_PREFIX', 'account/login'),
+        'middleware' => ['web'],
+    ],
+
 ];

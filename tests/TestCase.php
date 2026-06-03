@@ -29,6 +29,8 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('database.default', 'testing');
+        // APP_KEY per il middleware web (cookie/sessione) nei test delle route.
+        $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
         // Pepper di test per gli HMAC del core.
         $app['config']->set('rebel-core.peppers', [1 => 'test-pepper']);
         $app['config']->set('rebel-core.pepper_current', 1);
