@@ -32,10 +32,14 @@ abstract class TestCase extends Orchestra
         // Pepper di test per gli HMAC del core.
         $app['config']->set('rebel-core.peppers', [1 => 'test-pepper']);
         $app['config']->set('rebel-core.pepper_current', 1);
+        // Niente sleep di timing-pad nei test (li renderebbe lentissimi).
+        $app['config']->set('rebel-email-otp.timing_target_ms', 0);
     }
 
     protected function defineDatabaseMigrations(): void
     {
+        // Migrazioni di questo package + quelle del core (che vivono in vendor).
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../vendor/padosoft/laravel-rebel-core/database/migrations');
     }
 }
