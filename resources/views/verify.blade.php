@@ -32,7 +32,7 @@
             @csrf
             <input type="hidden" name="challenge_id" value="{{ $challengeId }}">
             <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code"
-                   pattern="[0-9]*" maxlength="6" required autofocus
+                   pattern="[0-9]*" maxlength="{{ $digits ?? 6 }}" required autofocus
                    data-rebel-otp-input data-testid="code-input">
 
             @error('code')

@@ -43,9 +43,20 @@ final class VerifyEmailOtpChallenge
     {
         $maxAttempts = $this->intConfig('rebel-email-otp.max_attempts', 5);
         $now = CarbonImmutable::instance($this->clock->now());
+        $tenantId = $context->tenant?->id;
 
-        return $this->db->connection()->transaction(function () use ($challengeId, $code, $maxAttempts, $now): VerifyEmailOtpResult {
-            $challenge = EmailOtpChallenge::query()->whereKey($challengeId)->lockForUpdate()->first();
+        return $this->db->connection()->transaction(function () use ($challengeId, $code, $maxAttempts, $now, $tenantId): VerifyEmailOtpResult {
+            // Isolamento tenant: una challenge si verifica SOLO nello stesso contesto-tenant
+            // in cui è stata avviata (con tenant null deve avere tenant_id null).
+            $challenge = EmailOtpChallenge::query()
+                ->whereKey($challengeId)
+                ->when(
+                    $tenantId === null,
+                    fn ($query) => $query->whereNull('tenant_id'),
+                    fn ($query) => $query->where('tenant_id', $tenantId),
+                )
+                ->lockForUpdate()
+                ->first();
 
             if ($challenge === null) {
                 $this->auditFailure(null, 'invalid');

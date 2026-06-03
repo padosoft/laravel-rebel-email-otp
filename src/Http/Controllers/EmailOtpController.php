@@ -67,6 +67,7 @@ final class EmailOtpController extends Controller
             'maskedEmail' => $session['masked'] ?? '',
             'email' => $session['email'] ?? '',
             'cooldown' => config('rebel-email-otp.resend_cooldown_seconds', 30),
+            'digits' => config('rebel-email-otp.digits', 6),
         ]);
     }
 
