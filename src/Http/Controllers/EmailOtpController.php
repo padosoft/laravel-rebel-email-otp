@@ -14,11 +14,11 @@ use Padosoft\Rebel\Core\Identifiers\EmailIdentifier;
 use Padosoft\Rebel\EmailOtp\RebelEmailOtp;
 
 /**
- * Controller di RIFERIMENTO per il login passwordless email-OTP (web).
+ * REFERENCE controller for the passwordless email-OTP login (web).
  *
- * È volutamente semplice: un'app reale (es. Gescat) può usare i propri controller
- * che chiamano la facade RebelEmailOtp. Qui mostriamo il flusso completo
- * login → verify → done con sessione, viste pubblicabili e anti-enumeration.
+ * It is deliberately simple: a real application can use its own controllers that
+ * call the RebelEmailOtp facade. Here we show the complete
+ * login → verify → done flow with session, publishable views and anti-enumeration.
  */
 final class EmailOtpController extends Controller
 {
@@ -81,8 +81,8 @@ final class EmailOtpController extends Controller
         $session = $request->session()->get(self::SESSION_KEY);
         $challengeId = $request->string('challenge_id')->toString();
 
-        // Il challenge_id deve corrispondere a quello aperto in questa sessione: impedisce
-        // di attaccare direttamente una challenge altrui di cui si conosca l'id.
+        // The challenge_id must match the one opened in this session: this prevents
+        // directly attacking someone else's challenge whose id is known.
         if (! is_array($session) || ($session['challenge_id'] ?? null) !== $challengeId) {
             return redirect()->route('rebel-email-otp.login');
         }
@@ -101,8 +101,8 @@ final class EmailOtpController extends Controller
 
         $request->session()->forget(self::SESSION_KEY);
 
-        // Demo: in un'app reale qui faresti Auth::login($result->subject) (web)
-        // oppure app(TokenIssuer)->issue($result->subject, $context) (mobile).
+        // Demo: in a real app you would call Auth::login($result->subject) here (web)
+        // or app(TokenIssuer)->issue($result->subject, $context) (mobile).
         return redirect()->route('rebel-email-otp.done');
     }
 

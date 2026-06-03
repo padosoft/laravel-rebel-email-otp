@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Padosoft\Rebel\EmailOtp\Results;
 
 /**
- * Esito di "start": volutamente GENERICO (anti-enumeration). La risposta è identica
- * sia che l'account esista o no — quindi non rivela nulla. Contiene il challenge_id
- * necessario alla schermata di verifica e l'email mascherata da mostrare in UI.
+ * Outcome of "start": deliberately GENERIC (anti-enumeration). The response is identical
+ * whether the account exists or not — so it reveals nothing. It contains the challenge_id
+ * needed by the verification screen and the masked email to display in the UI.
  */
 final readonly class StartEmailOtpResult
 {

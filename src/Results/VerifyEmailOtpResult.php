@@ -7,14 +7,14 @@ namespace Padosoft\Rebel\EmailOtp\Results;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
- * Esito di "verify".
+ * Outcome of "verify".
  *
- *  - success: codice corretto e challenge consumata (single-use);
- *  - reason:  motivo del fallimento (machine-readable), null se successo;
- *  - subject: l'utente risolto (se esiste). Può essere null anche in caso di successo:
- *    in scenari B2C "account-on-demand" il chiamante decide se crearlo.
+ *  - success: correct code and challenge consumed (single-use);
+ *  - reason:  failure reason (machine-readable), null on success;
+ *  - subject: the resolved user (if it exists). It can be null even on success:
+ *    in B2C "account-on-demand" scenarios the caller decides whether to create it.
  *
- * Il chiamante traduce poi il subject in login:
+ * The caller then turns the subject into a login:
  *   web    → Auth::login($subject)
  *   mobile → app(TokenIssuer)->issue($subject, $ctx)  → TokenPair
  */

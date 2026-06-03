@@ -20,14 +20,14 @@ use Padosoft\Rebel\EmailOtp\Results\VerifyEmailOtpResult;
 use Psr\Clock\ClockInterface;
 
 /**
- * Verifica un OTP in modo ATOMICO e single-use.
+ * Verify an OTP ATOMICALLY and single-use.
  *
- *  - lock pessimistico sulla riga (lockForUpdate in transazione): due verify
- *    concorrenti non possono entrambe passare;
- *  - replay: una challenge già consumata/verificata non è riutilizzabile;
- *  - scadenza e max tentativi gestiti (blocco dopo troppi errori);
- *  - confronto del codice a tempo costante (hash_equals dentro OtpHasher);
- *  - ritorna l'eventuale subject (utente) legato alla challenge.
+ *  - pessimistic row lock (lockForUpdate in a transaction): two concurrent
+ *    verifies cannot both succeed;
+ *  - replay: an already consumed/verified challenge cannot be reused;
+ *  - expiration and max attempts handled (block after too many errors);
+ *  - constant-time code comparison (hash_equals inside OtpHasher);
+ *  - returns the subject (user) linked to the challenge, if any.
  */
 final class VerifyEmailOtpChallenge
 {
@@ -46,8 +46,8 @@ final class VerifyEmailOtpChallenge
         $tenantId = $context->tenant?->id;
 
         return $this->db->connection()->transaction(function () use ($challengeId, $code, $maxAttempts, $now, $tenantId): VerifyEmailOtpResult {
-            // Isolamento tenant: una challenge si verifica SOLO nello stesso contesto-tenant
-            // in cui è stata avviata (con tenant null deve avere tenant_id null).
+            // Tenant isolation: a challenge can ONLY be verified within the same tenant context
+            // in which it was started (with a null tenant it must have a null tenant_id).
             $challenge = EmailOtpChallenge::query()
                 ->whereKey($challengeId)
                 ->when(

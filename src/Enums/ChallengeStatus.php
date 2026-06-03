@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Padosoft\Rebel\EmailOtp\Enums;
 
 /**
- * Stati del ciclo di vita di una challenge OTP.
+ * Lifecycle states of an OTP challenge.
  *
- *  pending  → creata, non ancora inviata
- *  sent     → codice inviato, in attesa di verifica
- *  verified → codice corretto verificato
- *  consumed → usata (single-use): non più riutilizzabile
- *  failed   → verifica fallita
- *  expired  → scaduta (oltre il TTL) o invalidata da un reinvio
- *  blocked  → bloccata (troppi tentativi)
+ *  pending  → created, not yet sent
+ *  sent     → code sent, awaiting verification
+ *  verified → correct code verified
+ *  consumed → used (single-use): no longer reusable
+ *  failed   → verification failed
+ *  expired  → expired (past the TTL) or invalidated by a resend
+ *  blocked  → blocked (too many attempts)
  */
 enum ChallengeStatus: string
 {

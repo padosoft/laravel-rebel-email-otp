@@ -13,7 +13,7 @@ use Padosoft\Rebel\EmailOtp\Results\StartEmailOtpResult;
 use Padosoft\Rebel\EmailOtp\Results\VerifyEmailOtpResult;
 
 /**
- * Punto d'ingresso del package email-OTP. Risolvibile dal container:
+ * Entry point of the email-OTP package. Resolvable from the container:
  *
  *   $otp = app(RebelEmailOtp::class);
  *   $start  = $otp->start(EmailIdentifier::from($email), 'customer-login', $ctx);

@@ -11,11 +11,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Email con il codice OTP. È queued (non blocca il flusso) e va sulla coda dedicata "rebel".
+ * Email carrying the OTP code. It is queued (it does not block the flow) and goes onto the dedicated "rebel" queue.
  *
- * Implementa ShouldBeEncrypted: il payload del job (che contiene il codice in chiaro,
- * necessario per l'invio) viene CIFRATO nella coda, così un dump di Redis/`failed_jobs`
- * non espone l'OTP attivo. Il codice non va comunque mai loggato.
+ * It implements ShouldBeEncrypted: the job payload (which contains the plaintext code,
+ * required for delivery) is ENCRYPTED in the queue, so a dump of Redis/`failed_jobs`
+ * does not expose the active OTP. The code must never be logged anyway.
  *
  * @property string $code
  */

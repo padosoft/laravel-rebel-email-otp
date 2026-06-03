@@ -1,6 +1,6 @@
 # Laravel Rebel — Email OTP
 
-> **Login passwordless via email-OTP, enterprise-grade.** Email → codice → accesso, stile Shopify, ma con anti-enumeration vera, rate-limit/abuso, multi-tenant, verifica atomica single-use ed emissione **token Sanctum** per mobile. Fa parte della suite `padosoft/laravel-rebel-*`.
+> **Passwordless login via email-OTP, enterprise-grade.** Email → code → access, Shopify-style, but with real anti-enumeration, rate-limiting/abuse protection, multi-tenant support, atomic single-use verification and **Sanctum token** issuance for mobile. Part of the `padosoft/laravel-rebel-*` suite.
 
 <p align="center">
   <img src="resources/screenshoots/Laravel-Rebel-banner.png" alt="Laravel Rebel" width="100%">
@@ -16,141 +16,141 @@
 
 ---
 
-## Indice
+## Table of contents
 
-- [Cos'è (e cosa NON è)](#cosè-e-cosa-non-è)
-- [Glossario rapido](#glossario-rapido)
-- [Perché Rebel Email-OTP — i moat](#perché-rebel-email-otp--i-moat)
-- [Rebel vs gli altri (card-battle)](#rebel-vs-gli-altri-card-battle)
-- [Come funziona (il flusso, passo-passo)](#come-funziona-il-flusso-passo-passo)
-- [Installazione (a prova di junior)](#installazione-a-prova-di-junior)
-- [Configurazione (ogni opzione)](#configurazione-ogni-opzione)
-- [Esempi d'uso](#esempi-duso)
+- [What it is (and what it is NOT)](#what-it-is-and-what-it-is-not)
+- [Quick glossary](#quick-glossary)
+- [Why Rebel Email-OTP — the moats](#why-rebel-email-otp--the-moats)
+- [Rebel vs the others (card-battle)](#rebel-vs-the-others-card-battle)
+- [How it works (step by step)](#how-it-works-step-by-step)
+- [Installation (junior-proof)](#installation-junior-proof)
+- [Configuration (every option)](#configuration-every-option)
+- [Usage examples](#usage-examples)
 - [Mobile / Sanctum](#mobile--sanctum)
-- [Test "live" con Mailtrap (email vere)](#test-live-con-mailtrap-email-vere)
-- [Sicurezza](#sicurezza)
-- [Testing & Licenza](#testing--licenza)
+- ["Live" testing with Mailtrap (real emails)](#live-testing-with-mailtrap-real-emails)
+- [Security](#security)
+- [Testing & License](#testing--license)
 
 ---
 
-## Cos'è (e cosa NON è)
+## What it is (and what it is NOT)
 
-**È** l'engine che fa accedere un utente **senza password**: inserisce l'email, riceve un **codice OTP**, lo digita, è dentro. In più gestisce tutto ciò che un prodotto serio richiede: anti-enumeration, rate-limit, multi-tenant, audit, verifica atomica, token per app mobile.
+**It is** the engine that lets a user sign in **without a password**: they enter their email, receive an **OTP code**, type it in, and they are in. On top of that it handles everything a serious product requires: anti-enumeration, rate-limiting, multi-tenant, audit, atomic verification, tokens for mobile apps.
 
-**Non è** un client SMS (per SMS/WhatsApp c'è `laravel-rebel-channels`), e **non** sostituisce Laravel Fortify (login classico/passkey/TOTP restano a Fortify, orchestrati da `laravel-rebel-bridge-fortify`).
+**It is not** an SMS client (for SMS/WhatsApp there is `laravel-rebel-channels`), and it does **not** replace Laravel Fortify (classic login/passkey/TOTP stay with Fortify, orchestrated by `laravel-rebel-bridge-fortify`).
 
-Dipende da [`padosoft/laravel-rebel-core`](https://github.com/padosoft/laravel-rebel-core) (value object/contratti condivisi). Per la **visione d'insieme dell'ecosistema**, parti dal README del core.
+It depends on [`padosoft/laravel-rebel-core`](https://github.com/padosoft/laravel-rebel-core) (shared value objects/contracts). For the **big-picture view of the ecosystem**, start from the core README.
 
 ---
 
-## Glossario rapido
+## Quick glossary
 
-| Termine | In parole semplici |
+| Term | In plain words |
 |---|---|
-| **OTP** | Codice usa-e-getta (es. 6 cifre) inviato via email. |
-| **Challenge** | La "pratica" aperta quando chiedi un codice: ha un id, una scadenza, dei tentativi. |
-| **Anti-enumeration** | Non far capire a un attaccante se un'email è registrata o no (risposta sempre identica). |
-| **Single-use / atomico** | Un codice funziona **una volta sola**; due verifiche in parallelo non passano entrambe. |
-| **Idempotency-Key** | Se l'app mobile rimanda la stessa richiesta (rete instabile), **non** invii due codici. |
+| **OTP** | One-time code (e.g. 6 digits) sent via email. |
+| **Challenge** | The "case" opened when you request a code: it has an id, an expiry and a number of attempts. |
+| **Anti-enumeration** | Not letting an attacker figure out whether an email is registered or not (always the same response). |
+| **Single-use / atomic** | A code works **only once**; two parallel verifications cannot both succeed. |
+| **Idempotency-Key** | If the mobile app retries the same request (flaky network), you do **not** send two codes. |
 
 ---
 
-## Perché Rebel Email-OTP — i moat
+## Why Rebel Email-OTP — the moats
 
-| ★ | Cosa | In breve |
+| ★ | What | In short |
 |:--:|---|---|
-| ★ | **Anti-enumeration vera** | Risposta + **tempo di risposta** + dimensione identici per email esistente/inesistente. La maggior parte dei pacchetti svela l'esistenza dell'account. |
-| ★ | **Verifica atomica single-use** | Lock pessimistico (o Redis Lua): niente replay, niente race condition. |
-| ★ | **Codice mai in chiaro** | Salvato come **HMAC** con salt per-challenge + pepper versionato (rotazione senza rotture). |
-| ★ | **Web + Mobile** | Stesso flusso: web → sessione; mobile → **TokenPair Sanctum** (access + refresh). |
-| ★ | **Multi-tenant & audit** | Isolamento per tenant + audit trail con redazione automatica dei segreti. |
+| ★ | **Real anti-enumeration** | Response + **response time** + size identical for an existing/non-existing email. Most packages reveal whether the account exists. |
+| ★ | **Atomic single-use verification** | Pessimistic lock (or Redis Lua): no replay, no race conditions. |
+| ★ | **Code never in plaintext** | Stored as an **HMAC** with a per-challenge salt + versioned pepper (rotation without breakage). |
+| ★ | **Web + Mobile** | Same flow: web → session; mobile → **Sanctum TokenPair** (access + refresh). |
+| ★ | **Multi-tenant & audit** | Per-tenant isolation + audit trail with automatic secret redaction. |
 
 ---
 
-## Rebel vs gli altri (card-battle)
+## Rebel vs the others (card-battle)
 
-| Feature | Shopify | `spatie/laravel-one-time-passwords` | **Rebel Email-OTP** |
-|---|:--:|:--:|:--:|
-| Login email→codice | ✅ | ⚠️ base | ✅ |
-| Anti-enumeration (msg + **timing** + size) | ⚠️ | ❌ | ✅ |
-| Verifica atomica single-use | ✅ | ⚠️ | ✅ |
-| Codice come HMAC + salt + key rotation | n/d | ⚠️ | ✅ |
-| Idempotency-Key (retry mobile) | n/d | ❌ | ✅ |
-| Una sola challenge attiva / resend con cooldown | ✅ | ⚠️ | ✅ |
-| Emissione token mobile (Sanctum) | n/d | ❌ | ✅ |
-| Multi-tenant + audit con redazione | ⚠️ | ❌ | ✅ |
+| Feature | Shopify passwordless | `spatie/laravel-one-time-passwords` | Generic "magic link" packages | **Rebel Email-OTP** |
+|---|:--:|:--:|:--:|:--:|
+| Login email→code | ✅ | ✅ | ✅ | ✅ |
+| Real anti-enumeration (msg + **timing** + size) | ⚠️ | ❌ | ❌ | ✅ |
+| Atomic single-use verification | ✅ | ✅ | ❌ | ✅ |
+| Code stored as HMAC + salt + key rotation | n/a | ❌ | ❌ | ✅ |
+| Idempotency-Key (mobile retry) | n/a | ❌ | ❌ | ✅ |
+| Single active challenge / resend with cooldown | ✅ | ❌ | ❌ | ✅ |
+| Mobile token issuance (Sanctum) | n/a | ❌ | ❌ | ✅ |
+| Multi-tenant + audit with redaction | ⚠️ | ❌ | ❌ | ✅ |
 
-**Perché vince:** non è un "helper OTP", è un **engine di prodotto** con le proprietà di sicurezza già dentro.
+**Why it wins:** it is not an "OTP helper", it is a **product engine** with the security properties already baked in.
 
 ---
 
-## Come funziona (il flusso, passo-passo)
+## How it works (step by step)
 
 ```text
-1) START   utente inserisce email
-           → Rebel apre una challenge, genera un codice, lo invia (queued)
-           → risponde SEMPRE in modo generico (anti-enumeration) + tempo normalizzato
-2) VERIFY  utente digita il codice
-           → verifica ATOMICA (lock): scaduto? consumato? troppi tentativi?
-           → se corretto: challenge "consumata" (single-use) → login
-                web    = sessione + cookie
-                mobile = TokenPair Sanctum (access + refresh)
-3) RESEND  (opzionale) reinvia con cooldown e limite massimo
+1) START   the user enters their email
+           → Rebel opens a challenge, generates a code, sends it (queued)
+           → ALWAYS responds generically (anti-enumeration) + normalized timing
+2) VERIFY  the user types the code
+           → ATOMIC verification (lock): expired? consumed? too many attempts?
+           → if correct: challenge "consumed" (single-use) → login
+                web    = session + cookie
+                mobile = Sanctum TokenPair (access + refresh)
+3) RESEND  (optional) resends with a cooldown and a maximum limit
 ```
 
 ---
 
-## Installazione (a prova di junior)
+## Installation (junior-proof)
 
-**1. Richiedi il package**
+**1. Require the package**
 ```bash
 composer require padosoft/laravel-rebel-email-otp
 ```
 
-**2. Pubblica config e viste (opzionale)**
+**2. Publish the config and views (optional)**
 ```bash
 php artisan vendor:publish --tag=rebel-email-otp-config
-php artisan vendor:publish --tag=rebel-email-otp-views     # personalizza le schermate
-php artisan vendor:publish --tag=rebel-email-otp-assets    # pubblica il JS in public/vendor/...
+php artisan vendor:publish --tag=rebel-email-otp-views     # customize the screens
+php artisan vendor:publish --tag=rebel-email-otp-assets    # publish the JS to public/vendor/...
 ```
 
-**3. Imposta il pepper del core nel `.env`** (chiave segreta per gli HMAC)
+**3. Set the core pepper in `.env`** (secret key for the HMACs)
 ```dotenv
-# genera:  php -r "echo bin2hex(random_bytes(32));"
-REBEL_PEPPER_V1=incolla-un-valore-lungo-e-casuale
+# generate:  php -r "echo bin2hex(random_bytes(32));"
+REBEL_PEPPER_V1=paste-a-long-random-value-here
 REBEL_PEPPER_CURRENT=1
 ```
 
-**4. Esegui le migration**
+**4. Run the migrations**
 ```bash
 php artisan migrate
 ```
 
-**5. Configura un mailer** (in produzione il tuo SMTP/ESP; in sviluppo/test Mailtrap, vedi sotto).
+**5. Configure a mailer** (in production your own SMTP/ESP; in development/testing Mailtrap, see below).
 
-Fatto: vai su `/account/login` (route di riferimento incluse) e prova il flusso. Per usare i **tuoi** controller, disattiva le route con `REBEL_OTP_ROUTES=false`.
+Done: go to `/account/login` (reference routes included) and try the flow. To use **your own** controllers, disable the routes with `REBEL_OTP_ROUTES=false`.
 
 ---
 
-## Configurazione (ogni opzione)
+## Configuration (every option)
 
 File: `config/rebel-email-otp.php`
 
-| Chiave | Default | Cosa fa |
+| Key | Default | What it does |
 |---|---|---|
-| `digits` | `6` | Cifre del codice (usa `8` per azioni ad alta assurance). |
-| `ttl_seconds` | `600` | Validità del codice (max NIST: 600s = 10 min). |
-| `max_attempts` | `5` | Tentativi di verifica prima del blocco. |
-| `max_resends` | `3` | Reinvii massimi. |
-| `resend_cooldown_seconds` | `30` | Attesa minima tra due reinvii. |
-| `store` | `database` | `database` (lock) o `redis` (Lua) per la verifica atomica. |
-| `timing_target_ms` | `250` | Target di tempo per la risposta di `start` (anti-timing). `0` = disattivato. |
-| `routes.enabled` | `true` | Carica le route web di riferimento. |
-| `routes.prefix` | `account/login` | Prefisso delle route. |
+| `digits` | `6` | Code digits (use `8` for high-assurance actions). |
+| `ttl_seconds` | `600` | Code validity (NIST max: 600s = 10 min). |
+| `max_attempts` | `5` | Verification attempts before blocking. |
+| `max_resends` | `3` | Maximum resends. |
+| `resend_cooldown_seconds` | `30` | Minimum wait between two resends. |
+| `store` | `database` | `database` (lock) or `redis` (Lua) for atomic verification. |
+| `timing_target_ms` | `250` | Time target for the `start` response (anti-timing). `0` = disabled. |
+| `routes.enabled` | `true` | Loads the reference web routes. |
+| `routes.prefix` | `account/login` | Route prefix. |
 
 ---
 
-## Esempi d'uso
+## Usage examples
 
 **Start + Verify (PHP API)**
 ```php
@@ -162,41 +162,41 @@ use Padosoft\Rebel\EmailOtp\RebelEmailOtp;
 $otp = app(RebelEmailOtp::class);
 $ctx = SecurityContext::fromRequest($request, app(KeyedHasher::class))->withGuard('customers');
 
-// 1) start (risposta generica: non rivela se l'account esiste)
+// 1) start (generic response: does not reveal whether the account exists)
 $start = $otp->start(EmailIdentifier::from($request->input('email')), 'customer-login', $ctx);
 
 // 2) verify
 $result = $otp->verify($start->challengeId, $request->input('code'), $ctx);
 
 if ($result->success) {
-    auth('customers')->login($result->subject); // web (mobile: vedi sotto)
+    auth('customers')->login($result->subject); // web (mobile: see below)
 }
 ```
 
-**Resend con cooldown**
+**Resend with cooldown**
 ```php
 $resend = $otp->resend(EmailIdentifier::from($email), 'customer-login', $ctx);
 // $resend->status === 'cooldown' | 'max_resends' | 'ok'
 ```
 
-**Idempotency (retry mobile senza doppio invio)**
+**Idempotency (mobile retry without double sending)**
 ```php
 $otp->start($identifier, 'customer-login', $ctx, idempotencyKey: $request->header('Idempotency-Key'));
 ```
 
-**Risolvere l'utente (la tua app)**
+**Resolving the user (your app)**
 ```php
 use Padosoft\Rebel\Core\Contracts\SubjectResolver;
 
-app()->bind(SubjectResolver::class, MioCustomerResolver::class); // email → cliente
-// così $result->subject sarà il tuo utente dopo la verifica
+app()->bind(SubjectResolver::class, MyCustomerResolver::class); // email → customer
+// so $result->subject will be your user after verification
 ```
 
 ---
 
 ## Mobile / Sanctum
 
-Per i client headless/mobile, dopo `verify()` emetti la coppia di token con il tuo `TokenIssuer` (estensione Sanctum):
+For headless/mobile clients, after `verify()` issue the token pair with your `TokenIssuer` (a Sanctum extension):
 
 ```php
 if ($result->success && $result->subject !== null) {
@@ -211,35 +211,35 @@ if ($result->success && $result->subject !== null) {
 
 ---
 
-## Test "live" con Mailtrap (email vere)
+## "Live" testing with Mailtrap (real emails)
 
-Per verificare che le email arrivino davvero (anche in CI), usa **[Mailtrap](https://mailtrap.io)** (free):
+To verify that emails actually arrive (even in CI), use **[Mailtrap](https://mailtrap.io)** (free):
 
-1. Crea un account → **Email Testing → Inbox** → copia le credenziali **SMTP** (o l'API key).
-2. Mettile nel `.env` (vedi `.env.example`): `MAILTRAP_SMTP_*` / `MAILTRAP_APIKEY` / `MAILTRAP_INBOXID`.
-3. I test del gruppo `live` colpiranno l'inbox reale; senza credenziali si **auto-skippano** (offline-safe). In CI le credenziali vanno nei **GitHub Actions secrets**.
+1. Create an account → **Email Testing → Inbox** → copy the **SMTP** credentials (or the API key).
+2. Put them in `.env` (see `.env.example`): `MAILTRAP_SMTP_*` / `MAILTRAP_APIKEY` / `MAILTRAP_INBOXID`.
+3. The tests in the `live` group will hit the real inbox; without credentials they **auto-skip** (offline-safe). In CI the credentials go into the **GitHub Actions secrets**.
 
-> `.env.example` contiene **tutte** le variabili documentate.
-
----
-
-## Sicurezza
-
-- Codice **mai in chiaro**: `HMAC(challengeId | code | salt, pepper[versione])`, confronto a tempo costante.
-- **Single-use** + verifica atomica (lock / Redis Lua).
-- **Anti-enumeration**: messaggio, **timing** e dimensione risposta identici.
-- Rate-limit (tentativi/resend) + cooldown; idempotency.
-- Audit con **redazione** automatica (mai OTP/secret nei log).
-- Per assurance alta preferisci **passkey/step-up** (email-OTP è AAL1, vedi `laravel-rebel-step-up`).
+> `.env.example` contains **all** the documented variables.
 
 ---
 
-## Testing & Licenza
+## Security
+
+- Code **never in plaintext**: `HMAC(challengeId | code | salt, pepper[version])`, constant-time comparison.
+- **Single-use** + atomic verification (lock / Redis Lua).
+- **Anti-enumeration**: identical message, **timing** and response size.
+- Rate-limiting (attempts/resends) + cooldown; idempotency.
+- Audit with automatic **redaction** (never OTP/secrets in the logs).
+- For high assurance prefer **passkey/step-up** (email-OTP is AAL1, see `laravel-rebel-step-up`).
+
+---
+
+## Testing & License
 
 ```bash
 composer test     # Pest
-composer phpstan  # livello max
-composer pint     # stile
+composer phpstan  # max level
+composer pint     # style
 ```
 
-MIT — vedi [LICENSE](LICENSE). © Padosoft.
+MIT — see [LICENSE](LICENSE). © Padosoft.

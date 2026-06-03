@@ -16,16 +16,16 @@ use Padosoft\Rebel\EmailOtp\Results\StartEmailOtpResult;
 use Psr\Clock\ClockInterface;
 
 /**
- * Reinvia il codice: invalida la challenge precedente e ne crea una nuova,
- * rispettando un cooldown minimo e il numero massimo di reinvii (anti-abuso).
+ * Resend the code: invalidate the previous challenge and create a new one,
+ * honouring a minimum cooldown and the maximum number of resends (anti-abuse).
  *
- * Il tutto in TRANSAZIONE con lockForUpdate sulla challenge attiva, così due reinvii
- * concorrenti non possono entrambi superare il limite (race su max_resends).
+ * Everything runs inside a TRANSACTION with lockForUpdate on the active challenge, so
+ * two concurrent resends cannot both exceed the limit (race on max_resends).
  *
- * Il cooldown si basa su `created_at` (= momento dell'invio), NON su `updated_at`:
- * altrimenti i fallimenti di verify (che toccano updated_at) ne resetterebbero il timer.
+ * The cooldown is based on `created_at` (= the time the code was sent), NOT on `updated_at`:
+ * otherwise failed verify attempts (which touch updated_at) would reset its timer.
  *
- * Lo `status` del risultato segnala l'esito: 'ok' | 'cooldown' | 'max_resends'.
+ * The result `status` reports the outcome: 'ok' | 'cooldown' | 'max_resends'.
  */
 final class ResendEmailOtpChallenge
 {

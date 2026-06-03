@@ -18,12 +18,12 @@ return new class extends Migration
             $table->string('purpose');
 
             $table->string('identifier_type');
-            // identifier e codice salvati SOLO come HMAC (mai in chiaro). 128 per algo > sha256.
+            // identifier and code stored ONLY as HMAC (never in plaintext). 128 for algos > sha256.
             $table->string('identifier_hmac', 128);
             $table->unsignedTinyInteger('key_version');
-            // salt random server-only per-challenge: con il pepper protegge il code_hmac.
+            // server-only random per-challenge salt: together with the pepper it protects the code_hmac.
             $table->string('code_salt', 64);
-            // null quando la verifica è "provider-managed" (es. Twilio Verify).
+            // null when verification is "provider-managed" (e.g. Twilio Verify).
             $table->string('code_hmac', 128)->nullable();
 
             $table->nullableMorphs('subject');
@@ -49,7 +49,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // Una sola challenge "attiva" per identifier+tenant+purpose si cerca spesso così:
+            // The single "active" challenge per identifier+tenant+purpose is often looked up like this:
             $table->index(['identifier_hmac', 'tenant_id', 'purpose', 'status']);
             $table->index(['idempotency_key']);
             $table->index(['status', 'expires_at']);

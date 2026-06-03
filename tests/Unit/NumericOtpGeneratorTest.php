@@ -12,8 +12,8 @@ it('generates a zero-padded numeric code of the requested length', function (int
 })->with([4, 6, 8, 10]);
 
 it('keeps leading zeros (length is exact)', function (): void {
-    // Su molte generazioni almeno una dovrebbe iniziare per 0 → verifichiamo che la
-    // lunghezza resti sempre esatta (lo zero-padding non viene "mangiato").
+    // Over many generations at least one should start with 0 → we check that the
+    // length always stays exact (zero-padding is not "eaten").
     $generator = new NumericOtpGenerator;
 
     for ($i = 0; $i < 200; $i++) {

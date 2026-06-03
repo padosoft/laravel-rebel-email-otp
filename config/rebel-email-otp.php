@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 return [
 
-    // Numero di cifre dell'OTP. 6 per login B2C; alza a 8 per purpose ad alta assurance.
+    // Number of OTP digits. 6 for B2C login; raise to 8 for high-assurance purposes.
     'digits' => (int) env('REBEL_OTP_DIGITS', 6),
 
-    // Validità del codice in secondi (NIST: max 600s = 10 min).
+    // Code validity in seconds (NIST: max 600s = 10 min).
     'ttl_seconds' => (int) env('REBEL_OTP_TTL', 600),
 
-    // Tentativi massimi di verifica per challenge prima del blocco.
+    // Maximum verification attempts per challenge before it is blocked.
     'max_attempts' => (int) env('REBEL_OTP_MAX_ATTEMPTS', 5),
 
-    // Numero massimo di reinvii per challenge.
+    // Maximum number of resends per challenge.
     'max_resends' => (int) env('REBEL_OTP_MAX_RESENDS', 3),
 
-    // Cooldown minimo (secondi) tra due reinvii.
+    // Minimum cooldown (seconds) between two resends.
     'resend_cooldown_seconds' => (int) env('REBEL_OTP_RESEND_COOLDOWN', 30),
 
-    // Store di verifica atomica: 'redis' (Lua) se disponibile, altrimenti 'database' (lock).
+    // Atomic verification store: 'redis' (Lua) if available, otherwise 'database' (lock).
     'store' => env('REBEL_OTP_STORE', 'database'),
 
-    // Target di tempo (ms) per normalizzare la risposta di "start" ed evitare timing-enumeration.
+    // Target time (ms) to normalise the "start" response and avoid timing-enumeration.
     'timing_target_ms' => (int) env('REBEL_OTP_TIMING_TARGET_MS', 250),
 
     /*
     |--------------------------------------------------------------------------
-    | Route web di riferimento (login/verify/resend)
+    | Reference web routes (login/verify/resend)
     |--------------------------------------------------------------------------
-    | Abilitate di default per un'esperienza "out-of-box". Disattivale se usi i
-    | tuoi controller. Le viste sono pubblicabili (tag rebel-email-otp-views).
+    | Enabled by default for an "out-of-box" experience. Disable them if you use
+    | your own controllers. The views are publishable (tag rebel-email-otp-views).
     */
     'routes' => [
         'enabled' => (bool) env('REBEL_OTP_ROUTES', true),

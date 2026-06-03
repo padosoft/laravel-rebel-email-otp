@@ -25,15 +25,15 @@ use Padosoft\Rebel\EmailOtp\Results\StartEmailOtpResult;
 use Psr\Clock\ClockInterface;
 
 /**
- * Avvia una challenge OTP via email.
+ * Start an email OTP challenge.
  *
- * Proprietà di sicurezza chiave:
- *  - ANTI-ENUMERATION: non controlla se l'account esiste prima di rispondere; crea
- *    sempre una challenge, invia sempre il codice, risponde sempre in modo generico,
- *    e NORMALIZZA il tempo di risposta (timing pad) per non rivelare nulla.
- *  - IDEMPOTENZA: con la stessa Idempotency-Key non reinvia (utile sui retry mobile).
- *  - UNA SOLA challenge attiva per identifier+tenant+purpose (le precedenti decadono).
- *  - Il codice è salvato solo come HMAC (salt per-challenge + pepper).
+ * Key security properties:
+ *  - ANTI-ENUMERATION: it does not check whether the account exists before responding; it
+ *    always creates a challenge, always sends the code, always responds generically,
+ *    and NORMALISES the response time (timing pad) so nothing is revealed.
+ *  - IDEMPOTENCY: with the same Idempotency-Key it does not resend (useful for mobile retries).
+ *  - EXACTLY ONE active challenge per identifier+tenant+purpose (previous ones are expired).
+ *  - The code is stored only as an HMAC (per-challenge salt + pepper).
  */
 final class StartEmailOtpChallenge
 {
@@ -58,7 +58,7 @@ final class StartEmailOtpChallenge
         $identifierHashed = $this->keyedHasher->hash($identifier->normalized());
         $tenantId = $context->tenant?->id;
 
-        // Idempotenza: stessa key + identifier + purpose ancora attiva → non reinviare.
+        // Idempotency: same key + identifier + purpose still active → do not resend.
         if ($idempotencyKey !== null) {
             $existing = EmailOtpChallenge::query()
                 ->where('idempotency_key', $idempotencyKey)
@@ -79,8 +79,8 @@ final class StartEmailOtpChallenge
             }
         }
 
-        // Una sola challenge attiva: invalida le precedenti pendenti (scoping tenant-safe:
-        // con tenant null NON tocchiamo le challenge di altri tenant).
+        // Exactly one active challenge: invalidate the previous pending ones (tenant-safe scoping:
+        // with a null tenant we do NOT touch other tenants' challenges).
         EmailOtpChallenge::query()
             ->where('identifier_hmac', $identifierHashed->hash)
             ->where('purpose', $purpose)
@@ -98,8 +98,8 @@ final class StartEmailOtpChallenge
         $codeHashed = $this->otpHasher->hash($id, $code, $salt);
         $ttl = $this->intConfig('rebel-email-otp.ttl_seconds', 600);
 
-        // Risoluzione utente "interna": non cambia la risposta (anti-enum), ma se l'utente
-        // esiste lo leghiamo alla challenge per saperlo in fase di verify.
+        // "Internal" user resolution: it does not change the response (anti-enum), but if the
+        // user exists we link them to the challenge so we know it at verify time.
         $subject = $this->subjectResolver->resolve($identifier, $context);
 
         $challenge = new EmailOtpChallenge;
@@ -166,12 +166,12 @@ final class StartEmailOtpChallenge
     }
 
     /**
-     * Normalizza il tempo di risposta a un target (+ jitter) per non rivelare, via
-     * timing, se l'account esiste. Disattivabile con timing_target_ms <= 0 (utile nei test).
+     * Normalise the response time to a target (+ jitter) so it does not reveal, through
+     * timing, whether the account exists. Can be disabled with timing_target_ms <= 0 (useful in tests).
      *
-     * Nota carico: usa usleep() nel worker → sotto alta concorrenza occupa il pool FPM.
-     * Tieni il target basso (default 250ms) e proteggi `start` con bot-gate/rate-limit a
-     * monte; in scenari estremi valuta di disabilitarlo e normalizzare a livello di edge/proxy.
+     * Load note: it uses usleep() in the worker → under high concurrency it ties up the FPM pool.
+     * Keep the target low (default 250ms) and protect `start` with a bot-gate/rate-limit upstream;
+     * in extreme scenarios consider disabling it and normalising at the edge/proxy level.
      */
     private function padTiming(float $startedAt): void
     {

@@ -29,18 +29,18 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('database.default', 'testing');
-        // APP_KEY per il middleware web (cookie/sessione) nei test delle route.
+        // APP_KEY for the web middleware (cookie/session) in the route tests.
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
-        // Pepper di test per gli HMAC del core.
+        // Test pepper for the core HMACs.
         $app['config']->set('rebel-core.peppers', [1 => 'test-pepper']);
         $app['config']->set('rebel-core.pepper_current', 1);
-        // Niente sleep di timing-pad nei test (li renderebbe lentissimi).
+        // No timing-pad sleep in tests (it would make them extremely slow).
         $app['config']->set('rebel-email-otp.timing_target_ms', 0);
     }
 
     protected function defineDatabaseMigrations(): void
     {
-        // Migrazioni di questo package + quelle del core (che vivono in vendor).
+        // Migrations of this package + those of the core (which live in vendor).
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadMigrationsFrom(__DIR__.'/../vendor/padosoft/laravel-rebel-core/database/migrations');
     }

@@ -33,7 +33,7 @@ beforeEach(function (): void {
 it('resolves and links the subject so verify returns the user', function (): void {
     $user = OtpTestUser::query()->create(['email' => 'mario@example.it']);
 
-    // Resolver applicativo finto: email → utente.
+    // Fake application resolver: email → user.
     app()->instance(SubjectResolver::class, new class($user) implements SubjectResolver
     {
         public function __construct(private readonly OtpTestUser $user) {}

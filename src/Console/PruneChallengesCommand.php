@@ -12,15 +12,15 @@ use Psr\Clock\ClockInterface;
 /**
  * `php artisan rebel:email-otp:prune --days=7`
  *
- * Elimina le challenge OTP più vecchie di N giorni (retention/GDPR). Pensato per
- * lo scheduler. Le challenge sono comunque single-use e scadono da sole; questo
- * comando ripulisce lo storico.
+ * Deletes OTP challenges older than N days (retention/GDPR). Designed for the
+ * scheduler. Challenges are single-use and expire on their own anyway; this
+ * command cleans up the history.
  */
 final class PruneChallengesCommand extends Command
 {
-    protected $signature = 'rebel:email-otp:prune {--days=7 : Elimina le challenge più vecchie di N giorni}';
+    protected $signature = 'rebel:email-otp:prune {--days=7 : Delete challenges older than N days}';
 
-    protected $description = 'Elimina le challenge OTP email più vecchie di N giorni.';
+    protected $description = 'Delete email OTP challenges older than N days.';
 
     public function handle(ClockInterface $clock): int
     {
@@ -35,7 +35,7 @@ final class PruneChallengesCommand extends Command
 
         $count = is_int($deleted) ? $deleted : 0;
 
-        $this->info("Eliminate {$count} challenge più vecchie di {$days} giorni.");
+        $this->info("Deleted {$count} challenges older than {$days} days.");
 
         return self::SUCCESS;
     }

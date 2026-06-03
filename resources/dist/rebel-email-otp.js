@@ -1,12 +1,12 @@
 /**
- * Rebel Email-OTP — progressive enhancement (vanilla JS, nessuna dipendenza).
- * Le pagine funzionano anche SENZA questo file (form POST classici); qui aggiungiamo
- * solo comodità: normalizzazione del paste del codice e countdown del reinvio.
+ * Rebel Email-OTP — progressive enhancement (vanilla JS, no dependencies).
+ * The pages work even WITHOUT this file (plain POST forms); here we only add
+ * conveniences: normalising the pasted code and the resend countdown.
  */
 (function () {
     'use strict';
 
-    // Input OTP: tieni solo cifre, gestisci il paste, auto-submit a lunghezza piena.
+    // OTP input: keep digits only, handle paste, auto-submit at full length.
     document.querySelectorAll('[data-rebel-otp-input]').forEach(function (input) {
         var max = parseInt(input.getAttribute('maxlength') || '6', 10);
 
@@ -32,7 +32,7 @@
         });
     });
 
-    // Countdown del reinvio: disabilita il bottone per N secondi.
+    // Resend countdown: disable the button for N seconds.
     document.querySelectorAll('[data-rebel-otp-verify]').forEach(function (card) {
         var cooldown = parseInt(card.getAttribute('data-resend-cooldown') || '30', 10);
         var button = card.querySelector('[data-rebel-resend]');

@@ -11,7 +11,7 @@ use Padosoft\Rebel\EmailOtp\RebelEmailOtp;
 it('prunes challenges older than the given number of days', function (): void {
     Notification::fake();
 
-    // Una challenge "vecchia" e una "recente".
+    // One "old" challenge and one "recent" one.
     $old = app(RebelEmailOtp::class)->start(EmailIdentifier::from('old@example.it'), 'customer-login', new SecurityContext('x'));
     $recent = app(RebelEmailOtp::class)->start(EmailIdentifier::from('new@example.it'), 'customer-login', new SecurityContext('y'));
 

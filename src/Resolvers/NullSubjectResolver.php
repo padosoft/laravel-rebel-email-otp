@@ -10,8 +10,8 @@ use Padosoft\Rebel\Core\Contracts\SubjectResolver;
 use Padosoft\Rebel\Core\Identifiers\AuthIdentifier;
 
 /**
- * Resolver di default: non risolve nessun utente (ritorna null).
- * L'app (es. Gescat) fornisce la propria implementazione che mappa email → cliente.
+ * Default resolver: it does not resolve any user (returns null).
+ * The application provides its own implementation that maps email → customer.
  */
 final class NullSubjectResolver implements SubjectResolver
 {

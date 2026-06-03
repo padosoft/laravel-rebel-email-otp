@@ -74,7 +74,7 @@ it('rejects a verify whose challenge_id does not match the session', function ()
     Notification::fake();
     $this->post(route('rebel-email-otp.start'), ['email' => 'mario@example.it'])->assertRedirect();
 
-    // challenge_id arbitrario diverso da quello in sessione → torna al login (no brute force diretto).
+    // An arbitrary challenge_id different from the one in session → back to login (no direct brute force).
     $this->post(route('rebel-email-otp.verify'), ['challenge_id' => 'someone-else-id', 'code' => '123456'])
         ->assertRedirect(route('rebel-email-otp.login'));
 });

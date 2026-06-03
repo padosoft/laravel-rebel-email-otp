@@ -8,15 +8,15 @@ use Padosoft\Rebel\Core\Contracts\KeyedHasher;
 use Padosoft\Rebel\Core\Hashing\HashedValue;
 
 /**
- * Calcola/verifica l'HMAC di un OTP.
+ * Computes/verifies the HMAC of an OTP.
  *
- * Il valore hashato è la composizione `challengeId | code | salt`:
- *  - il `challengeId` (ULID) lega l'hash a quella specifica challenge;
- *  - il `salt` (random server-only) impedisce precomputazione e protegge anche se
- *    il pepper trapelasse;
- *  - il pepper (segreto, dentro KeyedHasher) è la chiave HMAC.
+ * The hashed value is the composition `challengeId | code | salt`:
+ *  - the `challengeId` (ULID) binds the hash to that specific challenge;
+ *  - the `salt` (server-only random) prevents precomputation and protects even if
+ *    the pepper were leaked;
+ *  - the pepper (a secret, inside KeyedHasher) is the HMAC key.
  *
- * Il confronto avviene a tempo costante (hash_equals dentro KeyedHasher).
+ * The comparison is performed in constant time (hash_equals inside KeyedHasher).
  */
 final class OtpHasher
 {

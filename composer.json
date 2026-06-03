@@ -1,6 +1,6 @@
 {
     "name": "padosoft/laravel-rebel-email-otp",
-    "description": "Login passwordless email-OTP enterprise per Laravel Rebel: anti-enumeration, rate-limit multidimensionale, multi-tenant/purpose/risk, emissione token Sanctum. Parte di padosoft/laravel-rebel-*.",
+    "description": "Enterprise passwordless email-OTP login for Laravel Rebel: anti-enumeration, multi-dimensional rate-limiting, multi-tenant/purpose/risk, Sanctum token issuance. Part of padosoft/laravel-rebel-*.",
     "keywords": ["laravel", "authentication", "otp", "passwordless", "email", "login", "padosoft", "rebel"],
     "homepage": "https://github.com/padosoft/laravel-rebel-email-otp",
     "license": "MIT",

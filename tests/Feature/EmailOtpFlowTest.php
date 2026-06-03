@@ -13,7 +13,7 @@ use Padosoft\Rebel\EmailOtp\RebelEmailOtp;
 use Psr\Clock\ClockInterface;
 
 /**
- * Avvia una challenge e ritorna [challengeId, code] catturando il codice dalla notifica.
+ * Starts a challenge and returns [challengeId, code] by capturing the code from the notification.
  *
  * @return array{0: string, 1: string}
  */
@@ -57,11 +57,11 @@ it('rejects a wrong code, counts attempts and blocks after the max', function ()
     $otp = app(RebelEmailOtp::class);
     $ctx = new SecurityContext('x');
 
-    // max_attempts default = 5: i primi 5 tentativi errati danno wrong_code...
+    // max_attempts default = 5: the first 5 wrong attempts return wrong_code...
     for ($i = 0; $i < 5; $i++) {
         expect($otp->verify($challengeId, '000000', $ctx)->reason)->toBe('wrong_code');
     }
-    // ...poi la challenge è bloccata.
+    // ...then the challenge is blocked.
     expect($otp->verify($challengeId, '000000', $ctx)->reason)->toBe('blocked')
         ->and(EmailOtpChallenge::query()->findOrFail($challengeId)->status)->toBe(ChallengeStatus::Blocked);
 });
@@ -77,7 +77,7 @@ it('expires a challenge after its TTL (using a fake clock)', function (): void {
 
     [$challengeId, $code] = startAndCapture();
 
-    $clock->advance(601); // TTL default 600s
+    $clock->advance(601); // default TTL 600s
 
     expect(app(RebelEmailOtp::class)->verify($challengeId, $code, new SecurityContext('x'))->reason)
         ->toBe('expired');

@@ -15,10 +15,10 @@ it('does not invalidate another tenant challenge when starting with a null tenan
     $otp = app(RebelEmailOtp::class);
     $email = EmailIdentifier::from('mario@example.it');
 
-    // Challenge attiva per il tenant "B".
+    // Active challenge for tenant "B".
     $b = $otp->start($email, 'customer-login', (new SecurityContext('x'))->withTenant(new TenantContext('B')));
 
-    // Start con tenant null per la STESSA email: non deve toccare la challenge del tenant B.
+    // Start with a null tenant for the SAME email: it must not touch tenant B's challenge.
     $otp->start($email, 'customer-login', new SecurityContext('y'));
 
     expect(EmailOtpChallenge::query()->findOrFail($b->challengeId)->status)->toBe(ChallengeStatus::Sent);
@@ -32,6 +32,6 @@ it('keeps idempotency scoped per tenant', function (): void {
     $a = $otp->start($email, 'customer-login', (new SecurityContext('x'))->withTenant(new TenantContext('A')), idempotencyKey: 'k');
     $b = $otp->start($email, 'customer-login', (new SecurityContext('y'))->withTenant(new TenantContext('B')), idempotencyKey: 'k');
 
-    // Stessa idempotency key ma tenant diversi → challenge diverse.
+    // Same idempotency key but different tenants → different challenges.
     expect($b->challengeId)->not->toBe($a->challengeId);
 });

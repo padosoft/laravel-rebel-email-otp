@@ -16,10 +16,10 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 /**
- * Engine di login passwordless via email-OTP.
+ * Passwordless login engine via email-OTP.
  *
- * Dipende da padosoft/laravel-rebel-core per value object/contratti condivisi
- * (identificatori, KeyedHasher, AuditLogger, LoginResult, Clock...).
+ * Depends on padosoft/laravel-rebel-core for shared value objects/contracts
+ * (identifiers, KeyedHasher, AuditLogger, LoginResult, Clock...).
  */
 final class RebelEmailOtpServiceProvider extends PackageServiceProvider
 {
@@ -40,7 +40,7 @@ final class RebelEmailOtpServiceProvider extends PackageServiceProvider
             return new OtpHasher($app->make(KeyedHasher::class));
         });
 
-        // Resolver utente di default = nessuno (l'app fornisce il suo).
+        // Default user resolver = none (the app provides its own).
         $this->app->bindIf(SubjectResolver::class, NullSubjectResolver::class);
     }
 
