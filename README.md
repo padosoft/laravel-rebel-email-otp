@@ -1,5 +1,8 @@
 # Laravel Rebel — Email OTP
 
+> Official documentation: https://doc.laravel-rebel.padosoft.com
+
+
 > **Passwordless login via email-OTP, enterprise-grade.** Email → code → access, Shopify-style, but with real anti-enumeration, rate-limiting/abuse protection, multi-tenant support, atomic single-use verification and **Sanctum token** issuance for mobile. Part of the `padosoft/laravel-rebel-*` suite.
 
 <p align="center">
@@ -261,3 +264,4 @@ composer pint     # style
 ```
 
 MIT — see [LICENSE](LICENSE). © Padosoft.
+
